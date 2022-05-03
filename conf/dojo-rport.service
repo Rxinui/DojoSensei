@@ -1,0 +1,14 @@
+[Unit]
+Description=Dojoplateforme configuration for rport service
+After=network-online.target syslog.target
+    
+[Service]
+Type=simple
+User=$SETUP_USER
+# RemainAfterExit=yes
+ExecStart=/home/$SETUP_USER/.rport/setup.sh --user $SETUP_USER -c -vncserver
+ExecStop=/opt/TurboVNC/bin/vncserver -kill :1
+# TimeoutStartSec=15
+
+[Install]
+WantedBy=multi-user.target" >/etc/systemd/system/dojo-rport.service
