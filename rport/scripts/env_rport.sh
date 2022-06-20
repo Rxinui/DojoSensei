@@ -9,4 +9,7 @@ CLIENT_ID="dojo-api_vbox-1"
 PASSWORD="auauNZgEiVxB"
 # 22 -> ssh, 7681 -> ttyd
 RPORTD_REMOTES="['22','7681']" 
+# RPORTD_REMOTES="['172.20.0.1:22','172.20.0.1:7681']" 
+# only the host machine that runs rportd is allowed (172.20.0.1, from intdojonet network)
+RPORTD_TUNNEL_ALLOWED="['127.0.0.0/8']"
 ## END @Rxinui custom
