@@ -1,14 +1,8 @@
-# README
+# DojoSensei
 
-## Install
+GitHub repository for **sensei** of [DojoPlateforme](https://github.com/Rxinui/DojoPlateforme)
 
-On the client host:
+## Introduction
 
-1.a Clone this git repository
-1.b Download the following release
+This repository contains all resources needed by **sensei** such as guidelines and installation scripts.
 
-2. Run the following script
-
-```sh
-sudo ./setup.sh -rport -i
-```
