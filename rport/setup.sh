@@ -26,9 +26,6 @@ while [ $# -gt 0 ]; do
     "-vncserver")
         RUN_VNCSERVER=1
         ;;
-    "-ttyd")
-        RUN_TTYD=1
-        ;;
     "--uninstall" | "-u")
         UNINSTALL=1
         ;;
@@ -99,11 +96,5 @@ if [ $RUN_VNCSERVER ]; then
         SETUP_USER=$SETUP_USER $RPORT_SCRIPTS_DIR/configure_vncserver.sh && sleep 2 && $RPORT_SCRIPTS_DIR/configure_rport.sh -vncserver
     else
         $RPORT_SCRIPTS_DIR/install_vncserver.sh
-    fi
-fi
-
-if [ $RUN_TTYD ]; then
-    if [ $INSTALL ]; then
-        $RPORT_SCRIPTS_DIR/install_ttyd.sh
     fi
 fi
