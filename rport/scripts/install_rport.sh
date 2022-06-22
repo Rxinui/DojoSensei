@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh 
 
 ##
 # Installer script adapted from the official RPort client installer 'rport-installer.sh'
@@ -488,7 +488,8 @@ create_systemd_service() {
     test -e /etc/systemd/system/rport.service && rm -f /etc/systemd/system/rport.service
     /usr/local/bin/rport --service install --service-user "${USER}" --config /etc/rport/rport.conf
     # @Rxinui custom
-    sed -E -i "s/^ExecStart=(.*)/ExecStart=\1 --fingerprint `curl -k -s https://$RPORTD_HOST:9050/fingerprint.txt`/g" /etc/systemd/system/rport.service
+    # sed -E -i "s|^ExecStart=(.*)|ExecStart=/usr/local/bin/rport -c "/etc/rport/rport.conf" --fingerprint |g" /etc/systemd/system/rport.service
+    # sed -E -i "s|^User=(.*)|User=root|g" /etc/systemd/system/rport.service
     if is_available systemctl; then
         systemctl daemon-reload
         systemctl start rport # @Rxinui avoid connection error when installing rport
@@ -527,7 +528,12 @@ prepare_config() {
     sed -i "s/#*auth = .*/auth = \"${CLIENT_ID}:${PASSWORD}\"/g" "$CONFIG_FILE"
     sed -i "s/^#*remotes = .*/remotes = ${RPORTD_REMOTES}/g" "$CONFIG_FILE"
     # sed -i "0,/#*tunnel_allowed = .*/s//tunnel_allowed = ${RPORTD_TUNNEL_ALLOWED}/" "$CONFIG_FILE"
-    sed -i "s/#*fingerprint = .*/fingerprint = \"${FINGERPRINT}\"/g" "$CONFIG_FILE"
+    if [ -z $RPORTD_FINGERPRINT ]; then
+        # disable fingerprint security
+        sed -i "s/#*fingerprint = .*/#fingerprint = \"${RPORTD_FINGERPRINT}\"/g" "$CONFIG_FILE"
+    else
+        sed -i "s/#*fingerprint = .*/fingerprint = \"${RPORTD_FINGERPRINT}\"/g" "$CONFIG_FILE"
+    fi
     sed -i "s/#*log_file = .*C.*Program Files.*/""/g" "$CONFIG_FILE"
     sed -i "s/#*log_file = /log_file = /g" "$CONFIG_FILE"
     sed -i "s|#updates_interval = '4h'|updates_interval = '4h'|g" "$CONFIG_FILE"
@@ -800,7 +806,7 @@ Try the following to investigate:
 #
 check_prerequisites
 
-MANDATORY="SERVER FINGERPRINT CLIENT_ID PASSWORD"
+MANDATORY="SERVER RPORTD_FINGERPRINT CLIENT_ID PASSWORD"
 for VAR in $MANDATORY; do
     if eval "[ -z $${VAR} ]"; then
         abort "Variable \$${VAR} not set."

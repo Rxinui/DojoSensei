@@ -88,6 +88,7 @@ uninstall_ttyd() {
 ## Main program ##
 if [ $(id -u) -ne 0 ]; then
     log_error "Please, run setup.sh as root user."
+    exit 2
 fi
 case $1 in
 "install" | "i")

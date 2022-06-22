@@ -50,8 +50,22 @@ check_package() {
 
 ##
 # Install 'TurboVNC' in the system and update PATH env.
+#
+# Parameters:
+#   --user, -u:         [Required] Install TurboVNC for given user. This user will be specified within the service.
+#
 ##
 install_turbovnc() {
+    case $1 in
+    "--user" | "-u")
+        shift
+        _USER=$1
+        ;;
+    esac
+    if [[ -z $_USER ]]; then
+        log_error "Must specify a user with the '--user' parameter"
+        exit 2
+    fi
     TURBOVNC_PACKAGE="/tmp/turbovnc_3.0_$(dpkg --print-architecture).deb"
     log_info "Prepare download of '$TURBOVNC_PACKAGE'"
     curl "https://deac-ams.dl.sourceforge.net/project/turbovnc/3.0/turbovnc_3.0_$(dpkg --print-architecture).deb" -o $TURBOVNC_PACKAGE
@@ -67,6 +81,32 @@ install_turbovnc() {
     fi" >>~/.profile
     fi
     log_info "'$TURBOVNC_PACKAGE' is now installed"
+    log_info "Create TurboVNC service"
+    cat <<EOF >/etc/systemd/system/turbovnc.service
+[Unit]
+Description=Run TurboVNC server to enable VNC protocol
+ConditionFileIsExecutable=/opt/TurboVNC/bin/vncserver
+After=syslog.target network.target
+
+[Service]
+Type=simple
+StartLimitInterval=5
+StartLimitBurst=10
+ExecStartPre=/usr/bin/rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
+ExecStart=$VNCSERVER_BIN/vncserver -securitytypes none,tlsnone,x509none -verbose :5
+StandardOutput=append:/var/log/turbovnc.log
+StandardError=append:/var/log/turbovnc.log
+# User=root
+User=$_USER
+Restart=on-failure
+RestartSec=60
+
+[Install]
+WantedBy=graphical.target 
+EOF
+    systemctl daemon-reload
+    systemctl enable turbovnc
+    log_info "TurboVNC installation is done"
 }
 
 ##
@@ -75,33 +115,54 @@ install_turbovnc() {
 uninstall_turbovnc() {
     log_info "Uninstall TurboVNC"
     apt remove -y turbovnc
+    log_info "Remove TurboVNC service"
+    rm -f /etc/systemd/system/turbovnc.service
+    systemctl daemon-reload
+    systemctl disable turbovnc
+    log_info "TurboVNC uninstallation is done"
 }
 
 ##
 # Start 'TurboVNC' server
 ##
 start_turbovnc() {
+    case $1 in
+    "--user" | "-u")
+        shift
+        _USER=$1
+        ;;
+    esac
+    if [[ -z $_USER ]]; then
+        log_error "Must specify a user with the '--user' parameter"
+        exit 2
+    fi
     log_info "Starting Turbo vncserver $VNCSERVER_BIN"
-    $VNCSERVER_BIN/vncserver -securitytypes none,tlsnone,x509none -verbose :1
+    #TODO delete /tmp/ X1 files
+    rm -f /tmp/.X1-lock /tmp/.X11-unix/X1
+    runuser -u $_USER -- $VNCSERVER_BIN/vncserver -securitytypes none,tlsnone,x509none -verbose :5
 }
 ###############
 
 ## Main program ##
 if [ $(id -u) -ne 0 ]; then
     log_error "Please, run setup.sh as root user."
+    exit 2
 fi
 case $1 in
 "install" | "i")
+    shift
     check_package curl
-    install_turbovnc
+    install_turbovnc $@
     ;;
 "uninstall" | "u")
     check_package apt
     uninstall_turbovnc
     ;;
 "start" | "s")
-    check_package $VNCSERVER_BIN
-    start_turbovnc
+    if [[ -d $VNCSERVER_BIN ]]; then
+        shift
+        start_turbovnc $@
+    fi
     ;;
 *)
     cat <<EOF

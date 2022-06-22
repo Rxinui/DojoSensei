@@ -7,13 +7,34 @@
 ##############################
 
 RPORT_SCRIPTS_DIR="$(dirname $(realpath $0))/scripts/"
-EXIT_ROOT_USER=101
-EXIT_NON_ROOT_USER=100
-EXIT_SETUP_USER_NULL=102
+
+## System Functions ##
+
+##
+# Log an information message.
+#
+# Parameters:
+#   $1: info message to log.
+##
+log_info() {
+    echo -e "\e[36mINFO: $1\e[0m"
+}
+
+##
+# Log an error message.
+#
+# Parameters:
+#   $1: error message to log.
+##
+log_error() {
+    echo -e "\e[31mERROR: $1\e[0m"
+}
+######################
 
 ## Main Program ##
 if [ $(id -u) -ne 0 ]; then
     log_error "Please, run setup.sh as root user."
+    exit 2
 fi
 . $RPORT_SCRIPTS_DIR/env_rport.sh
 case $1 in
@@ -29,6 +50,10 @@ case $1 in
     ;;
 "dry-run" | "d")
     bash $RPORT_SCRIPTS_DIR/install_rport.sh -d
+    ;;
+"start"|"s")
+    log_info "Start rport client"
+    runuser -u rport -- /usr/local/bin/rport -c "/etc/rport/rport.conf" --fingerprint `curl -k -s https://$RPORTD_HOST:9050/fingerprint.txt`
     ;;
 *)
     cat <<EOF
