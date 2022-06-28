@@ -23,7 +23,15 @@ You must clone this repository with `git` in the following directory `/opt`. If 
 git clone https://github.com/Rxinui/DojoSensei.git -b main --single-branch /opt
 ```
 
+You must set env `DOJO_SSH_PUBKEY` either within `.env` file or directly within shell, which is the SSH public key value of DojoPlateforme you will use.
+
 ## Packages 
+
+To install DojoSensei's packages, open a new terminal and position yourself in DojoSensei:
+
+```bash
+cd /opt/DojoSensei/
+```
 ### [Required] `rport`
 
 **Required**. To create a Virtual Machine supported by [DojoPlateforme](https://github.com/Rxinui/DojoPlateforme), it is necessary to install `rport` client. `rport` is mandatory to communicate with `rportd` server which manage tunnels from virtuals machine to end-to-end user. 
@@ -32,8 +40,7 @@ Go to `./rport/` directory and use the `setup.sh` script as root user
 #### Install
 
 ```bash
-cd /opt/DojoSensei/rport/ && \
-sudo ./setup.sh i # i as install
+sudo ./setup.sh i rport # i as install
 ```
 
 The installation using `setup.sh` implies:
@@ -43,8 +50,7 @@ The installation using `setup.sh` implies:
 #### Uninstall
 
 ```bash
-cd /opt/DojoSensei/rport/ && \
-sudo ./setup.sh u # u as uninstall
+sudo ./setup.sh u rport # u as uninstall
 ```
 
 ### `ttyd`
@@ -55,8 +61,7 @@ Go to `./ttyd/` directory and use the `setup.sh` script as root user
 #### Install
 
 ```bash
-cd /opt/DojoSensei/ttyd/ && \
-sudo ./setup.sh i # i as install
+sudo ./setup.sh i ttyd # i as install
 ```
 
 The installation using `setup.sh` implies:
@@ -66,8 +71,7 @@ The installation using `setup.sh` implies:
 #### Uninstall
 
 ```bash
-cd /opt/DojoSensei/ttyd/ && \
-sudo ./setup.sh u # u as uninstall
+sudo ./setup.sh u ttyd # u as uninstall
 ```
 
 ### `turbovnc`
@@ -79,8 +83,7 @@ Go to `./turbovnc/` directory and use the `setup.sh` script as root user
 #### Install
 
 ```bash
-cd /opt/DojoSensei/turbovnc/ && \
-sudo ./setup.sh i --user <username> # i as install
+sudo ./setup.sh i turbovnc --user <username> # i as install
 ```
 
 where `<username>` is the user account to make accessible through HTTP.
@@ -95,8 +98,7 @@ The installation using `setup.sh` implies:
 2. Use the `setup.sh` script as root user
 
 ```bash
-cd /opt/DojoSensei/turbovnc/ && \
-sudo ./setup.sh u # u as uninstall
+sudo ./setup.sh u turbovnc # u as uninstall
 ```
 ## Export a VM as image file
 
