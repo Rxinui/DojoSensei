@@ -29,12 +29,37 @@ log_error() {
 }
 ######################
 
+process_install_or_uninstall(){
+    action=$1 # either install,uninstall
+    shift
+    while [[ $# -ne 0 ]]; do
+        ls ./$1 >>/dev/null
+        if [[ $? -ne 0 ]]; then
+            log_error "Package '$1' is not recognized by DojoSensei."
+            exit 2
+        fi
+        cd $1 && ./setup.sh ${action} && cd ..
+        shift
+    done
+}
+
+process_configure(){
+    shift
+    ls ./$1 >>/dev/null
+    if [[ $? -ne 0 ]]; then
+        log_error "Package '$1' is not recognized by DojoSensei."
+        exit 2
+    fi
+    cd $1 && shift && $PWD/setup.sh c $@ && cd ..
+}
+
 if [[ -f "./.env" ]]; then
+    log_info "Loading .env file..."
     . .env
 fi
 if [[ -z $DOJO_SSH_PUBKEY ]]; then
     log_error "Must set the DojoPlateforme's ssh public key with DOJO_SSH_PUBKEY env."
-    log_error "DOJO_SSH_PUBKEY is required inside ~/.ssh/authorized_keys of every VMs"
+    log_error "DOJO_SSH_PUBKEY is required inside <.ssh/authorized_keys> of every VMs"
     log_error "to enable DojoPlateforme to have access to them."
     exit 2
 fi
@@ -44,22 +69,39 @@ if [[ -z $HOST_SSH_DIR ]]; then
 fi
 case $1 in
 "install"|"i")
-    shift
-    # Insert DOJO_SSH_PUBKEY to ~/.ssh/authorized_keys
+    if [[ $# -lt 2 ]]; then
+        log_error "Must specify the package to install"
+        exit 2
+    fi
     grep "$DOJO_SSH_PUBKEY" "$HOST_SSH_DIR/authorized_keys"
     if [[ $? -ne 0 ]]; then
+        log_info "Inserting DOJO_SSH_PUBKEY to $HOST_SSH_DIR/authorized_keys..."
         echo "$DOJO_SSH_PUBKEY" >> "$HOST_SSH_DIR/authorized_keys"
     fi
     # Run package setup.sh script to install
-    while [[ $# -ne 0 ]]; do
-        ls ./$1 >>/dev/null
-        if [[ $? -ne 0 ]]; then
-            log_error "Package '$1' is not recognized by DojoSensei."
-            exit 2
-        fi
-        cd $1 && ./setup.sh i && cd ..
-        shift
-    done
+    log_info "Processing action 'install'..."
+    process_install_or_uninstall $@
+    ;;
+"configure"|"c")
+    if [[ $# -lt 2 ]]; then
+        log_error "Must specify the package to configure"
+        exit 2
+    fi
+    log_info "Processing action 'configure'..."
+    process_configure $@
+    ;;
+"uninstall"|"u")
+    if [[ $# -lt 2 ]]; then
+        log_error "Must specify the package to uninstall"
+        exit 2
+    fi
+    grep "$DOJO_SSH_PUBKEY" "$HOST_SSH_DIR/authorized_keys"
+    if [[ $? -ne 0 ]]; then
+        log_info "Removing DOJO_SSH_PUBKEY from $HOST_SSH_DIR/authorized_keys..."
+        sed -i "s/$DOJO_SSH_PUBKEY//g" "$HOST_SSH_DIR/authorized_keys"
+    fi
+    log_info "Processing action 'uninstall'..."
+    process_install_or_uninstall $@
     ;;
 *)
     cat <<EOF
@@ -85,9 +127,9 @@ Actions: actions are case-sensitive
     configure, c                        Configure DojoSensei's package
 
     [Usage]
-        ./setup.sh install <package> [... <package>]
-        ./setup.sh configure <package> [OPTIONS]
-        ./setup.sh uninstall <package> [... <package>]
+        ./setup.sh install <package> [... <package>] # multiple packages installation
+        ./setup.sh configure <package> [OPTIONS] # single package configuration
+        ./setup.sh uninstall <package> [... <package>] # multiple packages uninstallation
 
 Options: options are case-sensitive
 EOF
