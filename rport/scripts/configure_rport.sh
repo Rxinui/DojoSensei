@@ -21,8 +21,16 @@ log_info() {
 log_error() {
     echo -e "\e[31mERROR: $1\e[0m"
 }
-######################
 
+##
+# Put an string balise to notify that raw JSON
+# data will follow. Used by scripts to search
+# easily JSON data and make the parsing easier.
+##
+######################
+json_data_separator() {
+    echo "@JSON_DATA@"
+}
 parent_path=$(dirname $(realpath $0))
 . $parent_path/env.sh
 
@@ -181,11 +189,13 @@ case $1 in
 --set-vncserver)
     client_id="u${DOJO_USERID}w${DOJO_WORKSHOPID}"
     log_info "Setting VNC server tunnel on rport for client '$client_id'"
+    json_data_separator
     curl -k -u admin:shihan -XPUT -H "accept: application/json" "$RPORTD_API_URL/api/v1/clients/$client_id/tunnels?remote=5901&scheme=vnc&acl=172.20.0.1&http_proxy=true&check_port=0"
     ;;
 --set-ttyd)
     client_id="u${DOJO_USERID}w${DOJO_WORKSHOPID}"
     log_info "Setting ttyd HTTP tunnel on rport for client '$client_id'"
+    json_data_separator
     curl -k -u admin:shihan -XPUT -H "accept: application/json" "$RPORTD_API_URL/api/v1/clients/$client_id/tunnels?remote=7681&scheme=http&acl=172.20.0.1&check_port=0"
     ;;
 --help|-h)
@@ -210,4 +220,4 @@ Options: options are case-sensitive
 EOF
     ;;
 esac
-exit 0
+exit $?

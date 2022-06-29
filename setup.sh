@@ -135,4 +135,4 @@ Options: options are case-sensitive
 EOF
     ;;
 esac
-exit 0
+exit $?

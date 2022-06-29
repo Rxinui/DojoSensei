@@ -63,7 +63,7 @@ check_prerequisites() {
 
 install(){
     log_info "Downloading rport client version $RPORT_RELEASE for $(uname).$(uname -m)..."
-    curl -LOJ "https://github.com/cloudradar-monitoring/rport/releases/download/${RPORT_RELEASE}/${RPORT_TAR_FILE}"
+    curl -s -LOJ "https://github.com/cloudradar-monitoring/rport/releases/download/${RPORT_RELEASE}/${RPORT_TAR_FILE}"
     log_info "Extracting rport binairy to /usr/local/bin/rport..."
     tar vxzf $RPORT_TAR_FILE -C /usr/local/bin/ rport >> /dev/null
     log_info "Creating rport user and its home directory /var/lib/rport..."

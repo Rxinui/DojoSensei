@@ -68,7 +68,7 @@ install_turbovnc() {
     fi
     TURBOVNC_PACKAGE="/tmp/turbovnc_3.0_$(dpkg --print-architecture).deb"
     log_info "Prepare download of '$TURBOVNC_PACKAGE'"
-    curl "https://deac-ams.dl.sourceforge.net/project/turbovnc/3.0/turbovnc_3.0_$(dpkg --print-architecture).deb" -o $TURBOVNC_PACKAGE
+    curl -s "https://deac-ams.dl.sourceforge.net/project/turbovnc/3.0/turbovnc_3.0_$(dpkg --print-architecture).deb" -o $TURBOVNC_PACKAGE
     log_info "Install of '$TURBOVNC_PACKAGE'"
     sudo apt install -y $TURBOVNC_PACKAGE
     log_info "Add TurboVNC binaries to path"

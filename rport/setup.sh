@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 ########## setup.sh ##########
 # Install rport client
@@ -71,11 +71,12 @@ Actions: actions are case-sensitive
 Options: options are case-sensitive
 
     [configure]
+    --start             Start rport service
     --conf              Configure rport config file
     --set-vncserver     Configure rport to open vnc port on rportd
     --set-ttyd          Configure rport to open ttyd port on rportd
 EOF
     ;;
 esac
-exit 0
+exit $?
 ##################
